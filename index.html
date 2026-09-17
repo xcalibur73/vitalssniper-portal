@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VitalsSniper PRO — Proof-of-Flaw Web Inspector & Outreach Engine</title>
+  <meta name="description" content="1-Click CMS & builder detector, DOM bloat scanner, cellular payload budget inspector, and high-converting agency outreach engine.">
+  <link rel="icon" type="image/png" href="assets/appsumo_icon_512x512.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090a0f;
+      --surface: #12141c;
+      --surface-elevated: #171a25;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(255, 255, 255, 0.16);
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.2);
+      --emerald-light: #34d399;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-subtle: #6b7280;
+      --radius: 12px;
+      --radius-lg: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Ambient background lighting */
+    .ambient-glow {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1000px;
+      height: 450px;
+      background: radial-gradient(ellipse at top, rgba(16, 185, 129, 0.12) 0%, rgba(99, 102, 241, 0.06) 40%, transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Navbar */
+    header {
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(9, 10, 15, 0.85);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 16px var(--emerald-glow);
+    }
+
+    .brand-title {
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-badge {
+      font-size: 0.7rem;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--emerald-light);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 700;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover {
+      color: var(--text);
+    }
+
+    .btn-nav {
+      background: #ffffff;
+      color: #000000;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-nav:hover {
+      background: #f0f0f0;
+      transform: translateY(-1px);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 80px 0 60px;
+      text-align: center;
+    }
+
+    .hero-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .hero-pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 8px var(--emerald);
+    }
+
+    .hero h1 {
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      line-height: 1.15;
+      margin-bottom: 20px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero-gradient {
+      background: linear-gradient(135deg, #ffffff 40%, var(--emerald-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 680px;
+      margin: 0 auto 36px;
+      line-height: 1.65;
+    }
+
+    .cta-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #ffffff;
+      color: #000000;
+      padding: 16px 32px;
+      border-radius: 10px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s;
+      box-shadow: 0 8px 24px rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-primary:hover {
+      background: #f3f4f6;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(255, 255, 255, 0.25);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 16px 26px;
+      border-radius: 10px;
+      font-size: 1.02rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: var(--surface-elevated);
+      border-color: var(--border-hover);
+    }
+
+    .appsumo-banner {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(251, 191, 36, 0.08);
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      padding: 10px 20px;
+      border-radius: 10px;
+      color: #fef08a;
+      font-size: 0.88rem;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    /* Hero Preview Showcase */
+    .hero-preview {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 12px;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+      position: relative;
+      margin-bottom: 80px;
+    }
+
+    .hero-preview img {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      display: block;
+    }
+
+    /* Grid Feature Cards */
+    .features-section {
+      padding: 40px 0 80px;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .section-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .section-subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .grid-features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      transition: all 0.2s;
+    }
+
+    .card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      margin-bottom: 18px;
+      color: var(--emerald-light);
+    }
+
+    .card h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .card p {
+      color: var(--text-muted);
+      font-size: 0.93rem;
+      line-height: 1.6;
+    }
+
+    /* Installation Steps */
+    .install-section {
+      padding: 60px 0 80px;
+      border-top: 1px solid var(--border);
+    }
+
+    .steps-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-top: 40px;
+    }
+
+    .step-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      position: relative;
+    }
+
+    .step-number {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--emerald-light);
+      background: rgba(16, 185, 129, 0.12);
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-bottom: 16px;
+    }
+
+    .step-card h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .step-card p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+
+    .step-code {
+      display: inline-block;
+      background: #000000;
+      border: 1px solid var(--border);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: #e5e7eb;
+      margin: 4px 0;
+    }
+
+    /* Activation & AppSumo */
+    .activation-box {
+      background: linear-gradient(135deg, var(--surface) 0%, #151928 100%);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      margin: 60px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .activation-box h3 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .activation-box p {
+      color: var(--text-muted);
+      max-width: 650px;
+      margin-bottom: 24px;
+      font-size: 0.98rem;
+    }
+
+    .code-preview {
+      background: #090a0f;
+      border: 1px dashed rgba(255, 255, 255, 0.2);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      color: var(--emerald-light);
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+    }
+
+    /* Gallery Showcase */
+    .gallery-section {
+      padding: 40px 0 80px;
+      border-top: 1px solid var(--border);
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      margin-top: 36px;
+    }
+
+    .gallery-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: transform 0.2s;
+    }
+
+    .gallery-item:hover {
+      transform: scale(1.02);
+      border-color: var(--border-hover);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* FAQ */
+    .faq-section {
+      padding: 60px 0 80px;
+      border-top: 1px solid var(--border);
+    }
+
+    .faq-list {
+      max-width: 800px;
+      margin: 40px auto 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .faq-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+
+    .faq-item h4 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #ffffff;
+    }
+
+    .faq-item p {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 0;
+      text-align: center;
+      color: var(--text-subtle);
+      font-size: 0.88rem;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 16px;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+    }
+
+    .footer-links a:hover {
+      color: #ffffff;
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2.2rem; }
+      .nav-link { display: none; }
+      .activation-box { padding: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-glow"></div>
+
+  <!-- Header / Navigation -->
+  <header>
+    <div class="container nav">
+      <a href="#" class="brand">
+        <img src="assets/appsumo_icon_512x512.png" alt="VitalsSniper PRO" class="brand-logo">
+        <span class="brand-title">VitalsSniper</span>
+        <span class="brand-badge">PRO v1.2.0</span>
+      </a>
+      <div class="nav-actions">
+        <a href="#quickstart" class="nav-link">Installation</a>
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#faq" class="nav-link">FAQ</a>
+        <a href="vitalssniper_pro.zip" download class="btn-nav">Download .ZIP</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-pill">
+        <span class="hero-pill-dot"></span>
+        Manifest V3 &bull; Chromium & Firefox Compatible
+      </div>
+      <h1>
+        Proof-of-Flaw Web Inspector & <br>
+        <span class="hero-gradient">Agency Client Acquisition Engine</span>
+      </h1>
+      <p>
+        Audit any prospective client website in 1 second. Instantly detect page builder bloat, cellular payload overages, and missing AI citation schemas without opening devtools.
+      </p>
+
+      <div class="cta-group">
+        <a href="vitalssniper_pro.zip" download class="btn-primary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download VitalsSniper PRO (.zip)
+        </a>
+        <a href="#quickstart" class="btn-secondary">
+          View 30-Sec Setup Guide
+        </a>
+      </div>
+
+      <div>
+        <div class="appsumo-banner">
+          ⭐ AppSumo Lifetime Deal Edition &bull; Includes 1,000 License Key Activations
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Hero Preview Banner -->
+  <div class="container">
+    <div class="hero-preview">
+      <img src="assets/appsumo_hero_1920x1080.png" alt="VitalsSniper PRO Dashboard Preview">
+    </div>
+  </div>
+
+  <!-- Features Grid -->
+  <section id="features" class="features-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Engineered to Close Deals in Seconds</h2>
+        <p class="section-subtitle">Turn technical bottlenecks into closed retainer contracts with authentic proof-of-flaw diagnostics.</p>
+      </div>
+
+      <div class="grid-features">
+        <div class="card">
+          <div class="card-icon">⚡</div>
+          <h3>1-Click CMS & Builder Detection</h3>
+          <p>Instantly flags heavy page builders (Elementor, Divi, WPBakery, Avada, Salient, Squarespace, Webflow, Shopify, or Next.js) directly from DOM signatures.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">📊</div>
+          <h3>DOM Bloat & Payload Telemetry</h3>
+          <p>Measures uncompressed HTML document weight against the 50KB mobile cellular ceiling, and detects container "divception" (>1,400 elements).</p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🤖</div>
+          <h3>AI Citation Schema Readiness</h3>
+          <p>Scans for Schema.org JSON-LD Knowledge Graph markup to ensure client websites can be cited by ChatGPT, Perplexity, and Microsoft Copilot.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">📱</div>
+          <h3>Mobile Scaling & Viewport Check</h3>
+          <p>Flags locked viewport scaling tags (<code>user-scalable=0</code>) that hurt accessibility and penalize mobile search rankings.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">✉️</div>
+          <h3>Multi-Channel Outreach Generator</h3>
+          <p>Auto-generates non-salesy, hyper-specific 3-sentence Cold Emails, LinkedIn DMs, and 30-second Loom pitch scripts citing their exact bottlenecks.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">📄</div>
+          <h3>1-Page Executive PDF Teardown</h3>
+          <p>1-click printable audit dossier optimized for C-level executives. Attach it to your cold email or proposal to demonstrate immediate authority.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quickstart Setup -->
+  <section id="quickstart" class="install-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">30-Second Installation</h2>
+        <p class="section-subtitle">No build steps or complex dependencies. Works on all modern Chromium browsers and Firefox Developer Edition.</p>
+      </div>
+
+      <div class="steps-container">
+        <div class="step-card">
+          <span class="step-number">STEP 01</span>
+          <h3>Download & Extract</h3>
+          <p>Download <a href="vitalssniper_pro.zip" download style="color:var(--emerald-light); font-weight:600;">vitalssniper_pro.zip</a> and extract the folder to a convenient location on your computer.</p>
+        </div>
+
+        <div class="step-card">
+          <span class="step-number">STEP 02</span>
+          <h3>Open Extensions Page</h3>
+          <p>In Chrome, Brave, or Edge, visit <span class="step-code">chrome://extensions</span> and toggle <strong>Developer mode</strong> to <strong>ON</strong> in the top-right corner.</p>
+        </div>
+
+        <div class="step-card">
+          <span class="step-number">STEP 03</span>
+          <h3>Load Unpacked & Pin</h3>
+          <p>Click <strong>Load unpacked</strong>, select the unzipped folder, and pin <strong>VitalsSniper PRO</strong> to your toolbar. You're ready to inspect!</p>
+        </div>
+      </div>
+
+      <!-- AppSumo Activation Callout -->
+      <div class="activation-box">
+        <div class="step-number">PRO LICENSE ACTIVATION</div>
+        <h3>Have an AppSumo Redemption Code?</h3>
+        <p>After loading the extension, click the VitalsSniper icon, click the <strong>UPGRADE</strong> button in the top bar, and paste your lifetime code:</p>
+        <div class="code-preview">VS-PRO-XXXX-XXXX</div>
+        <p style="font-size: 0.88rem; color: var(--text-subtle);">Your license will immediately activate with unlimited client website audits, cold pitch generation, and PDF teardowns for life.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gallery Showcase -->
+  <section class="gallery-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Precision Dark Interface</h2>
+        <p class="section-subtitle">Luxury obsidian dark styling inspired by Linear, Apple, and Vercel.</p>
+      </div>
+
+      <div class="gallery-grid">
+        <div class="gallery-item">
+          <img src="assets/appsumo_screenshot1_1920x1080.png" alt="VitalsSniper Telemetry Audit">
+        </div>
+        <div class="gallery-item">
+          <img src="assets/appsumo_screenshot2_1920x1080.png" alt="Multi-Channel Outreach Generator">
+        </div>
+        <div class="gallery-item">
+          <img src="assets/appsumo_screenshot3_1920x1080.png" alt="1-Page Executive PDF Teardown">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section id="faq" class="faq-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <p class="section-subtitle">Everything you need to know about VitalsSniper PRO.</p>
+      </div>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <h4>Does VitalsSniper need access to client server credentials?</h4>
+          <p>No. VitalsSniper inspects publicly accessible DOM trees, HTML response sizes, and HTTP performance headers client-side in under 1 second. No passwords, API keys, or WordPress logins required.</p>
+        </div>
+
+        <div class="faq-item">
+          <h4>Which browsers are supported?</h4>
+          <p>VitalsSniper PRO is built on the universal Manifest V3 standard and works smoothly on Google Chrome, Brave, Microsoft Edge, Arc, Opera, and Firefox Developer Edition.</p>
+        </div>
+
+        <div class="faq-item">
+          <h4>Can I customize the outreach scripts?</h4>
+          <p>Yes. The extension automatically tailors the script to cite the prospect's exact domain, page builder, and uncompressed payload size. You can edit or tweak the copy directly before copying.</p>
+        </div>
+
+        <div class="faq-item">
+          <h4>Is this a lifetime deal?</h4>
+          <p>Yes. AppSumo buyers receive a lifetime license code that unlocks unlimited site audits, cold email generators, and printable PDF teardown dossiers with zero recurring monthly fees.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-links">
+        <a href="#features">Features</a>
+        <a href="#quickstart">Installation</a>
+        <a href="vitalssniper_pro.zip" download>Download ZIP</a>
+        <a href="#faq">FAQ</a>
+      </div>
+      <p>&copy; 2026 VitalsSniper PRO. All rights reserved. Single-User Commercial License.</p>
+    </div>
+  </footer>
+
+</body>
+</html>
