@@ -1219,15 +1219,15 @@
       <!-- Success State -->
       <div id="checkoutSuccessState" class="order-success">
         <div class="success-icon">✓</div>
-        <h3 style="font-size:1.6rem; font-weight:800; margin-bottom:8px;">Order Confirmed!</h3>
-        <p style="color:var(--text-muted); font-size:0.92rem;">Your lifetime license has been activated. Here is your unique activation key:</p>
+        <h3 style="font-size:1.6rem; font-weight:800; margin-bottom:8px;">Order Processing</h3>
+        <p style="color:var(--text-muted); font-size:0.92rem;">Redirecting you to the secure checkout & license delivery portal...</p>
         
-        <div class="generated-key-box" id="licenseKeyOutput">VS-PRO-XXXX-XXXX</div>
+        <div class="generated-key-box" id="licenseKeyOutput">PROCEEDING TO GATEWAY</div>
 
-        <a href="vitalssniper_pro.zip" download class="btn-submit-order" style="display:inline-block; text-decoration:none; margin-bottom:12px;">
-          ⬇️ Download VitalsSniper PRO (.zip)
+        <a id="successPortalBtn" href="https://vitalssniper-web.vercel.app/license" class="btn-submit-order" style="display:inline-block; text-decoration:none; margin-bottom:12px;">
+          🔑 Open License Portal
         </a>
-        <p style="font-size:0.8rem; color:var(--text-subtle);">A confirmation receipt and key have also been recorded.</p>
+        <p style="font-size:0.8rem; color:var(--text-subtle);">All downloads are cryptographically verified and locked to active licenses.</p>
       </div>
 
     </div>
@@ -1239,7 +1239,7 @@
       <button class="modal-close" onclick="closeRedeemModal()">&times;</button>
       <div class="modal-header">
         <h3>Redeem AppSumo Code</h3>
-        <p>Enter your AppSumo voucher to download and activate your lifetime license.</p>
+        <p>Enter your AppSumo voucher to verify and unlock your commercial download.</p>
       </div>
 
       <div class="form-group">
@@ -1247,15 +1247,12 @@
         <input type="text" id="appsumoCodeInput" class="form-control" placeholder="VS-PRO-XXXX-XXXX" style="text-transform: uppercase;">
       </div>
 
-      <button type="button" class="btn-submit-order" onclick="verifyAppsumoCode()">
-        Verify & Download Extension (.zip)
+      <button type="button" class="btn-submit-order" id="btnVerifyCode" onclick="verifyAppsumoCode(event)">
+        Verify & Unlock Extension (.zip)
       </button>
 
       <div id="redeemResult" style="margin-top:16px; display:none; text-align:center;">
-        <p style="color:var(--emerald-light); font-weight:700; margin-bottom:12px;">✓ Code verified successfully!</p>
-        <a href="vitalssniper_pro.zip" download class="btn-submit-order" style="display:inline-block; text-decoration:none;">
-          ⬇️ Download Extension Now
-        </a>
+        <!-- Injected dynamically on successful verification -->
       </div>
     </div>
   </div>
@@ -1267,7 +1264,7 @@
         <a href="#product">Store</a>
         <a href="#features">Features</a>
         <a href="#pricing">Pricing</a>
-        <a href="vitalssniper_pro.zip" download>Download ZIP</a>
+        <a href="https://vitalssniper-web.vercel.app/license">Redeem & Download</a>
         <a href="#" onclick="openRedeemModal()">Redeem Voucher</a>
       </div>
       <p>&copy; 2026 VitalsSniper PRO Store. All rights reserved. Single-User Commercial License.</p>
@@ -1346,31 +1343,62 @@
       document.getElementById('redeemModal').classList.remove('open');
     }
 
-    // Native Order Processing & Instant License Key Minting
+    // Native Order Processing & Redirection
     function handleNativeOrder(e) {
       e.preventDefault();
       const email = document.getElementById('buyerEmail').value.trim();
       const name = document.getElementById('buyerName').value.trim();
 
-      // Generate a legitimate VS-PRO license key format matching extension validation
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-      let p1 = '';
-      let p2 = '';
-      for (let i = 0; i < 4; i++) p1 += chars.charAt(Math.floor(Math.random() * chars.length));
-      for (let i = 0; i < 4; i++) p2 += chars.charAt(Math.floor(Math.random() * chars.length));
-      const generatedKey = `VS-PRO-${p1}-${p2}`;
-
-      document.getElementById('licenseKeyOutput').innerText = generatedKey;
       document.getElementById('checkoutFormState').style.display = 'none';
       document.getElementById('checkoutSuccessState').style.display = 'block';
+      document.getElementById('licenseKeyOutput').innerText = 'REDIRECTING TO CHECKOUT...';
+
+      setTimeout(() => {
+        window.location.href = `https://vitalssniper-web.vercel.app/?checkout=true&tier=${currentTier}&email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}`;
+      }, 1000);
     }
 
-    function verifyAppsumoCode() {
-      const code = document.getElementById('appsumoCodeInput').value.trim();
-      if (code.length >= 6) {
-        document.getElementById('redeemResult').style.display = 'block';
-      } else {
-        alert('Please enter a valid AppSumo redemption code (e.g., VS-PRO-XXXX-XXXX)');
+    async function verifyAppsumoCode(e) {
+      const codeInput = document.getElementById('appsumoCodeInput');
+      const code = codeInput.value.trim().toUpperCase();
+      const btn = document.getElementById('btnVerifyCode');
+      const resultDiv = document.getElementById('redeemResult');
+
+      if (!code) {
+        alert('Please enter your license or AppSumo redemption code.');
+        return;
+      }
+
+      btn.innerText = 'Verifying Code...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('https://vitalssniper-web.vercel.app/api/license/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: code })
+        });
+        const data = await res.json();
+        if (data.valid) {
+          resultDiv.innerHTML = `
+            <div style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); border-radius:12px; padding:16px;">
+              <p style="color:var(--emerald-light); font-weight:700; margin-bottom:6px;">✓ License Verified: ${data.tier}</p>
+              <p style="font-family:monospace; font-size:1.05rem; color:#fff; margin-bottom:12px;">${data.key}</p>
+              <a href="https://vitalssniper-web.vercel.app/api/download?key=${encodeURIComponent(data.key)}" class="btn-submit-order" style="display:inline-block; text-decoration:none;">
+                ⬇️ Download VitalsSniper PRO (.zip)
+              </a>
+            </div>
+          `;
+          resultDiv.style.display = 'block';
+        } else {
+          alert(data.message || 'Invalid license key. Please verify your purchase or AppSumo voucher.');
+          resultDiv.style.display = 'none';
+        }
+      } catch (err) {
+        window.location.href = `https://vitalssniper-web.vercel.app/license?key=${encodeURIComponent(code)}`;
+      } finally {
+        btn.innerText = 'Verify & Unlock Extension (.zip)';
+        btn.disabled = false;
       }
     }
   </script>
